@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rebooter ร้านซ่อมคอม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: หน้าร้านคอลัมน์เดียวกว้าง 1120px · hero บน "แผ่นรองซ่อม" สีเขียวมีตาราง · ปุ่มแชทลอยมุมขวาล่างเปิดแผงแชท */
+:root {
+  --bg: #F2F3F1;
+  --panel: #FFFFFF;
+  --ink: #15181C;
+  --ink-2: #3A4048;
+  --muted: #5B636E;
+  --line: #E2E4E7;
+  --accent: #0B6B58;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E1F0EB;
+  --mat: #0E4A3E;
+  --mat-ink: #F1F7F4;
+  --mat-muted: #A9C9BE;
+  --mat-grid: rgba(255,255,255,.075);
+  --mat-grid-major: rgba(255,255,255,.14);
+  --signal: #8FE3C3;
+  --ok: #1F9D6B;
+  --closed: #C2410C;
+  --shadow: 0 18px 40px -18px rgba(6,40,33,.45);
+
+  --display: "Chakra Petch", "IBM Plex Sans Thai", Tahoma, sans-serif;
+  --font: "CPN", "IBM Plex Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121514; --panel: #1B1F1E; --ink: #ECEEEC; --ink-2: #C9CFCC; --muted: #9AA3A0; --line: #2B302F;
+    --accent: #3DBB98; --accent-ink: #06221B; --accent-soft: #183A31;
+    --mat: #0B2E27; --mat-ink: #ECF5F1; --mat-muted: #93B5AA; --signal: #7FD9B7;
+    --ok: #3DBB98; --closed: #FB923C; --shadow: 0 18px 40px -18px rgba(0,0,0,.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121514; --panel: #1B1F1E; --ink: #ECEEEC; --ink-2: #C9CFCC; --muted: #9AA3A0; --line: #2B302F;
+  --accent: #3DBB98; --accent-ink: #06221B; --accent-soft: #183A31;
+  --mat: #0B2E27; --mat-ink: #ECF5F1; --mat-muted: #93B5AA; --signal: #7FD9B7;
+  --ok: #3DBB98; --closed: #FB923C; --shadow: 0 18px 40px -18px rgba(0,0,0,.7);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--font); }
+a { color: inherit; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+.mono { font-family: var(--mono); }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(1.6rem, 3.2vw, 2.2rem); font-weight: 700; }
+.eyebrow { font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+
+/* ---------- header ---------- */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 20px; min-height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.brand .logo { width: 36px; height: 36px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font: 700 1.15rem var(--display); }
+.brand b { font: 700 1.2rem var(--display); letter-spacing: .01em; }
+.brand small { display: block; font-size: .72rem; color: var(--muted); line-height: 1; margin-top: 2px; }
+.nav { display: flex; gap: 22px; margin-left: auto; }
+.nav a { text-decoration: none; color: var(--ink-2); font-weight: 500; font-size: .95rem; }
+.nav a:hover { color: var(--accent); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid transparent; font-weight: 600; text-decoration: none; white-space: nowrap; transition: transform .15s ease, background .15s ease; }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
+.btn-line { border-color: var(--line); background: var(--panel); }
+@media (max-width: 760px) { .nav { display: none; } .top .btn { margin-left: auto; } }
+
+/* ---------- hero บนแผ่นรองซ่อม ---------- */
+.mat { position: relative; background-color: var(--mat); color: var(--mat-ink); overflow: hidden;
+  background-image:
+    linear-gradient(var(--mat-grid-major) 1px, transparent 1px), linear-gradient(90deg, var(--mat-grid-major) 1px, transparent 1px),
+    linear-gradient(var(--mat-grid) 1px, transparent 1px), linear-gradient(90deg, var(--mat-grid) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px; background-position: -1px -1px; }
+.mat::after { /* ไม้บรรทัดขอบล่าง */ content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 14px;
+  background: repeating-linear-gradient(90deg, var(--mat-grid-major) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, var(--mat-muted) 0 1px, transparent 1px 120px);
+  background-size: 100% 7px, 100% 14px; background-repeat: no-repeat; background-position: bottom; opacity: .8; }
+.hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding-block: 64px 80px; }
+.hero > * { min-width: 0; }
+.status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--mat-grid-major); border-radius: 999px; font-size: .88rem; background: rgba(0,0,0,.18); }
+.status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 0 4px color-mix(in srgb, var(--signal) 25%, transparent); }
+.status.closed .dot { background: var(--closed); box-shadow: 0 0 0 4px color-mix(in srgb, var(--closed) 25%, transparent); }
+.hero h1 { font-size: clamp(2.4rem, 6vw, 4.1rem); font-weight: 700; margin-top: 22px; letter-spacing: -.01em; }
+.hero h1 em { font-style: normal; color: var(--signal); }
+.hero .lead { color: var(--mat-muted); font-size: 1.08rem; max-width: 34em; margin: 18px 0 30px; }
+.hero .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero .btn-primary { background: var(--signal); color: #06221B; }
+.hero .btn-primary:hover { background: color-mix(in srgb, var(--signal) 85%, #fff); }
+.hero .btn-ghost { border-color: var(--mat-grid-major); color: var(--mat-ink); background: rgba(0,0,0,.15); }
+.hero .btn-ghost:hover { background: rgba(0,0,0,.3); }
+
+/* ใบรับซ่อม */
+.ticket { background: var(--panel); color: var(--ink); border-radius: 14px; box-shadow: var(--shadow); padding: 22px; transform: rotate(1.5deg); position: relative; }
+.ticket::before { content: ""; position: absolute; left: 22px; right: 22px; top: -7px; height: 14px; background: radial-gradient(circle at 7px 7px, var(--mat) 5px, transparent 5.5px) 0 0 / 22px 14px repeat-x; }
+.ticket-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 12px; }
+.ticket-head b { font: 700 1.05rem var(--display); }
+.ticket-head span { font-family: var(--mono); font-size: .78rem; color: var(--muted); }
+.screen { margin: 16px 0; border-radius: 10px; background: #0A64C8; color: #fff; padding: 16px 18px; font-size: .78rem; line-height: 1.5; }
+.screen .face { font-size: 2rem; line-height: 1; margin-bottom: 8px; }
+.screen code { font-family: var(--mono); display: block; margin-top: 6px; }
+.rows { display: grid; gap: 8px; font-size: .92rem; }
+.rows div { display: grid; grid-template-columns: 7.5em 1fr; gap: 10px; }
+.rows dt { color: var(--muted); }
+.rows dd { margin: 0; font-weight: 600; min-width: 0; }
+.price-line { display: flex; justify-content: space-between; align-items: end; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.price-line strong { font: 700 1.7rem var(--display); color: var(--accent); }
+.price-line small { color: var(--muted); font-size: .8rem; }
+.ticket .by { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: .78rem; color: var(--muted); }
+@media (max-width: 860px) { .hero { grid-template-columns: 1fr; padding-block: 44px 64px; } .ticket { transform: none; } }
+
+/* ---------- facts ---------- */
+.facts { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--line); }
+.fact { padding: 26px 20px 26px 0; display: grid; gap: 2px; }
+.fact + .fact { padding-left: 20px; border-left: 1px solid var(--line); }
+.fact strong { font: 700 1.9rem var(--display); color: var(--accent); font-variant-numeric: tabular-nums; }
+.fact span { color: var(--muted); font-size: .92rem; }
+@media (max-width: 760px) { .facts { grid-template-columns: 1fr 1fr; } .fact:nth-child(3) { padding-left: 0; border-left: 0; } .fact:nth-child(n+3) { border-top: 1px solid var(--line); } }
+
+section.block { padding-block: 72px 8px; }
+.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+.sec-head p { margin: 8px 0 0; color: var(--muted); max-width: 40em; }
+
+/* ---------- อาการ → บริการ ---------- */
+.symptoms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.sym { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 6px; align-content: start; transition: border-color .15s ease, transform .15s ease; }
+.sym:hover { border-color: var(--accent); transform: translateY(-2px); }
+.sym .code { font-family: var(--mono); font-size: .78rem; color: var(--muted); overflow-wrap: anywhere; }
+.sym b { font-size: 1.05rem; }
+.sym .to { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 6px; font-size: .9rem; color: var(--ink-2); }
+.sym .to span:last-child { color: var(--accent); font-weight: 600; white-space: nowrap; }
+@media (max-width: 860px) { .symptoms { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .symptoms { grid-template-columns: 1fr; } }
+
+/* ---------- ขั้นตอน ---------- */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; counter-reset: s; border-top: 2px solid var(--ink); }
+.step { padding: 22px 24px 8px 0; counter-increment: s; }
+.step + .step { padding-left: 24px; border-left: 1px solid var(--line); }
+.step::before { content: "0" counter(s); font: 600 .85rem var(--mono); color: var(--accent); }
+.step h3 { font-size: 1.25rem; margin: 8px 0 6px; }
+.step p { margin: 0; color: var(--muted); }
+@media (max-width: 760px) { .steps { grid-template-columns: 1fr; } .step + .step { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); } }
+
+/* ---------- ราคา ---------- */
+.prices { columns: 2; column-gap: 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 24px; }
+.pr { break-inside: avoid; display: grid; grid-template-columns: 2.6em 1fr auto; gap: 10px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.pr .c { font: 500 .78rem var(--mono); color: var(--muted); }
+.pr .n { min-width: 0; }
+.pr .p { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pr .p.free { color: var(--accent); }
+.note { color: var(--muted); font-size: .88rem; margin-top: 12px; }
+@media (max-width: 760px) { .prices { columns: 1; padding: 6px 16px; } .pr .p { white-space: normal; } }
+
+/* ---------- นโยบาย ---------- */
+.policies { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.pol { background: var(--accent-soft); border-radius: 12px; padding: 20px; }
+.pol strong { display: block; font: 700 1.5rem var(--display); color: var(--accent); }
+.pol b { display: block; margin: 2px 0 6px; }
+.pol p { margin: 0; color: var(--ink-2); font-size: .93rem; }
+@media (max-width: 760px) { .policies { grid-template-columns: 1fr; } }
+
+/* ---------- ติดต่อ ---------- */
+.contact { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: start; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 28px; }
+.contact > * { min-width: 0; }
+.contact dl { display: grid; gap: 14px; margin: 0; }
+.contact dt { font-size: .82rem; color: var(--muted); }
+.contact dd { margin: 0; font-weight: 600; }
+.copy { margin-left: 8px; font-size: .8rem; font-weight: 500; border: 1px solid var(--line); background: var(--bg); border-radius: 6px; padding: 2px 8px; }
+.ask-box { background: var(--accent-soft); border-radius: 12px; padding: 22px; display: grid; gap: 12px; }
+.ask-box p { margin: 0; color: var(--ink-2); }
+@media (max-width: 760px) { .contact { grid-template-columns: 1fr; padding: 20px; } }
+
+footer { padding-block: 40px 120px; color: var(--muted); font-size: .85rem; }
+footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+/* ---------- ปุ่มแชทลอย + แผงแชท ---------- */
+.fab-wrap { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; align-items: center; gap: 12px; }
+.fab-tip { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font-size: .9rem; font-weight: 500; box-shadow: var(--shadow); }
+.fab { width: 60px; height: 60px; border-radius: 18px; border: 0; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; box-shadow: var(--shadow); position: relative; transition: transform .15s ease; }
+.fab:hover { transform: translateY(-2px); }
+.fab .ping { position: absolute; top: 7px; right: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--signal); border: 2px solid var(--accent); }
+.fab .ping::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid var(--signal); animation: ping 1.8s ease-out infinite; }
+@keyframes ping { to { transform: scale(2.4); opacity: 0; } }
+.chat-panel { position: fixed; right: 20px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 50; width: min(420px, calc(100vw - 40px)); height: min(680px, calc(100vh - 130px)); background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; transform-origin: bottom right; animation: pop .18s ease-out; }
+@keyframes pop { from { transform: scale(.94); opacity: 0; } }
+.chat-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 6px 14px; border-bottom: 1px solid var(--line); font-size: .85rem; color: var(--muted); }
+.chat-bar a { text-decoration: none; color: var(--accent); font-weight: 600; }
+.chat-bar .x { width: 36px; height: 36px; border: 0; background: transparent; border-radius: 8px; display: grid; place-items: center; }
+.chat-bar .x:hover { background: var(--bg); }
+.chat-panel iframe { flex: 1; width: 100%; border: 0; background: var(--bg); }
+.chat-open .fab-tip { display: none; }
+@media (max-width: 560px) {
+  .fab-tip { display: none; }
+  .chat-panel { inset: 0; width: auto; height: auto; border-radius: 0; border: 0; padding-top: env(safe-area-inset-top, 0px); }
+  .chat-open .fab-wrap { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Rebooter หน้าแรก">
+      <span class="logo">R</span>
+      <span><b>Rebooter</b><small>ซ่อมคอม · แก้ปัญหาไอที</small></span>
+    </a>
+    <nav class="nav" aria-label="เมนูหลัก">
+      <a href="#symptoms">อาการที่เจอบ่อย</a>
+      <a href="#prices">ราคา</a>
+      <a href="#warranty">ประกัน</a>
+      <a href="#contact">ติดต่อ</a>
+    </nav>
+    <button type="button" class="btn btn-primary" data-ask="">ถาม Rebooter AI</button>
+  </div>
+</header>
+
+<main id="top">
+  <div class="mat">
+    <div class="wrap hero">
+      <div>
+        <span class="status" id="status"><span class="dot"></span><span id="status-text">เปิดทุกวัน 10:00–20:00 น.</span></span>
+        <h1>คอมเป็นอะไร<br><em>ส่งภาพมาดู</em><br>รู้ราคาก่อนซ่อม</h1>
+        <p class="lead">ร้านซ่อมคอมและแก้ปัญหาไอทีสำหรับบ้าน นักศึกษา และโฮมออฟฟิศ ตรวจเช็คอาการฟรี แจ้งราคาให้ยืนยันก่อนลงมือทุกครั้ง ถ้าซ่อมไม่หายคืนค่าบริการเต็มจำนวน</p>
+        <div class="ctas">
+          <button type="button" class="btn btn-primary" data-ask="">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8"/></svg>
+            ถาม Rebooter AI
+          </button>
+          <button type="button" class="btn btn-ghost" data-ask="__photo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            ส่งภาพหน้าจอ Error
+          </button>
+        </div>
+      </div>
+
+      <article class="ticket" aria-label="ตัวอย่างการประเมินจากภาพ">
+        <div class="ticket-head"><b>ใบประเมินจากภาพ</b><span>ตัวอย่าง</span></div>
+        <div class="screen" aria-hidden="true">
+          <div class="face">:(</div>
+          Your PC ran into a problem and needs to restart.
+          <code>Stop code: CRITICAL_PROCESS_DIED</code>
+        </div>
+        <dl class="rows">
+          <div><dt>อาการ</dt><dd>จอฟ้า (BSOD) รีสตาร์ตเอง</dd></div>
+          <div><dt>บริการที่เหมาะ</dt><dd><span class="mono">S03</span> ตรวจซ่อมเปิดไม่ติด / จอฟ้า</dd></div>
+          <div><dt>ขั้นแรก</dt><dd><span class="mono">S01</span> ตรวจเช็คอาการ ฟรี</dd></div>
+        </dl>
+        <div class="price-line"><small>ค่าบริการ ไม่รวมอะไหล่</small><strong>เริ่มต้น 800 ฿</strong></div>
+        <div class="by"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>ประเมินโดย Rebooter AI จากราคาของร้านเท่านั้น</div>
+      </article>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="facts">
+      <div class="fact"><strong>ฟรี</strong><span>ตรวจเช็คอาการทุกเครื่อง</span></div>
+      <div class="fact"><strong>20</strong><span>บริการ ราคาประกาศชัด</span></div>
+      <div class="fact"><strong>90 วัน</strong><span>ประกันงานฮาร์ดแวร์</span></div>
+      <div class="fact"><strong>100%</strong><span>คืนค่าบริการถ้าซ่อมไม่หาย</span></div>
+    </div>
+
+    <section class="block" id="symptoms" aria-labelledby="sym-h">
+      <div class="sec-head">
+        <div>
+          <div class="eyebrow">อาการ → บริการ</div>
+          <h2 id="sym-h">เจออาการไหน กดถามได้เลย</h2>
+          <p>กดการ์ดเพื่อส่งคำถามให้ Rebooter AI ทันที ราคาที่ตอบมาจากรายการของร้าน</p>
+        </div>
+      </div>
+      <div class="symptoms" id="sym-list"></div>
+    </section>
+
+    <section class="block" aria-labelledby="how-h">
+      <div class="sec-head"><div><div class="eyebrow">ขั้นตอน</div><h2 id="how-h">ซ่อมกับเรา 3 ขั้น</h2></div></div>
+      <div class="steps">
+        <div class="step"><h3>ถามหรือส่งภาพ</h3><p>คุยกับ Rebooter AI ได้ตลอด 24 ชม. ส่งภาพหน้าจอ Error มาให้ดูอาการ แล้วรับราคาเริ่มต้นของบริการที่ตรงอาการ</p></div>
+        <div class="step"><h3>ตรวจเช็คฟรี แจ้งราคาก่อน</h3><p>นำเครื่องมาที่ร้านหรือจองคิว ช่างตรวจ 30–60 นาที แจ้งค่าบริการและค่าอะไหล่ให้ยืนยันก่อนลงมือ</p></div>
+        <div class="step"><h3>ซ่อมเสร็จ มีประกัน</h3><p>รับเครื่องพร้อมใบเสร็จ ฮาร์ดแวร์ประกัน 90 วัน ซอฟต์แวร์ 15 วัน ซ่อมไม่หายคืนค่าบริการ 100%</p></div>
+      </div>
+    </section>
+
+    <section class="block" id="prices" aria-labelledby="price-h">
+      <div class="sec-head">
+        <div><div class="eyebrow">ราคา · บาท รวม VAT</div><h2 id="price-h">ราคาค่าบริการทั้ง 20 รายการ</h2>
+        <p>ราคาเดียวกันทุกลูกค้า ไม่มีโปรโมชันส่วนลดและไม่รับต่อราคา</p></div>
+      </div>
+      <div class="prices" id="price-list"></div>
+      <p class="note">ราคาเป็นค่าบริการ (ค่าแรง) ไม่รวมค่าอะไหล่ ช่างแจ้งราคาอะไหล่หลังตรวจเช็คเครื่อง</p>
+    </section>
+
+    <section class="block" id="warranty" aria-labelledby="pol-h">
+      <div class="sec-head"><div><div class="eyebrow">ประกันและการคืนเงิน</div><h2 id="pol-h">เงื่อนไขชัดก่อนซ่อม</h2></div></div>
+      <div class="policies">
+        <div class="pol"><strong>90 วัน</strong><b>งานฮาร์ดแวร์</b><p>เปลี่ยนอะไหล่ ซ่อมวงจร รับประกันเฉพาะอาการเดิมที่ซ่อม</p></div>
+        <div class="pol"><strong>15 วัน</strong><b>งานซอฟต์แวร์</b><p>ลง Windows กำจัดไวรัส ตั้งค่าโปรแกรม</p></div>
+        <div class="pol"><strong>7 วัน</strong><b>ขอคืนเงิน</b><p>ซ่อมไม่หายคืนค่าบริการ 100% ภายใน 7 วันนับจากรับเครื่อง พร้อมใบเสร็จ</p></div>
+      </div>
+    </section>
+
+    <section class="block" id="contact" aria-labelledby="ct-h">
+      <div class="sec-head"><div><div class="eyebrow">ติดต่อ</div><h2 id="ct-h">มาที่ร้าน หรือจองคิวล่วงหน้า</h2></div></div>
+      <div class="contact">
+        <dl>
+          <div><dt>เวลาทำการ</dt><dd>ทุกวัน 10:00–20:00 น. · รับเครื่องรอบสุดท้าย 19:30 น.</dd></div>
+          <div><dt>โทร</dt><dd><span id="phone">02-123-4567</span><button type="button" class="copy" data-copy="02-123-4567">คัดลอก</button></dd></div>
+          <div><dt>LINE OA</dt><dd><span>@rebooter</span><button type="button" class="copy" data-copy="@rebooter">คัดลอก</button></dd></div>
+          <div><dt>ที่ตั้ง</dt><dd>อาคารตัวอย่าง ชั้น 1 ถนนฉลองกรุง แขวงลำปลาทิว เขตลาดกระบัง กรุงเทพฯ · จอดรถหน้าร้านฟรี 3 คัน</dd></div>
+          <div><dt>วันหยุด</dt><dd>1 ม.ค. และ 13–15 เม.ย.</dd></div>
+        </dl>
+        <div class="ask-box">
+          <b>ไม่แน่ใจว่าเป็นอะไร?</b>
+          <p>ถาม Rebooter AI ก่อนได้ ตอบจากข้อมูลบริการ ราคา และนโยบายของร้าน ส่งภาพหน้าจอให้ช่วยดูอาการได้ด้วย</p>
+          <button type="button" class="btn btn-primary" data-ask="">เริ่มแชท</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© Rebooter · ข้อมูลร้านเป็นข้อมูลจำลองสำหรับโครงงานรายวิชา 06048308 Intelligent Chatbot Development</span>
+    <span>Rebooter AI · RAG + Vision + Guard</span>
+  </div>
+</footer>
+
+<div class="fab-wrap">
+  <div class="fab-tip" id="fab-tip">ถาม Rebooter AI ได้ตลอด 24 ชม.</div>
+  <button type="button" class="fab" id="fab" aria-label="เปิดแชท Rebooter AI" aria-expanded="false" aria-controls="chat-panel">
+    <svg id="fab-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8"/></svg>
+    <span class="ping" id="ping"></span>
+  </button>
+</div>
+
+<div class="chat-panel" id="chat-panel" role="dialog" aria-label="แชท Rebooter AI" hidden>
+  <div class="chat-bar">
+    <a id="chat-full" href="/chat" target="_blank" rel="noopener">เปิดเต็มหน้าจอ ↗</a>
+    <button type="button" class="x" id="chat-close" aria-label="ปิดแชท">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const CHAT_URL = "/chat";
+
+// ข้อมูลจาก knowledge/Rebooter.md
+const SERVICES = [
+  ["S01", "ตรวจเช็คอาการ", "ฟรี"], ["S02", "ติดตั้ง Windows 10/11 พร้อมไดรเวอร์", "500"],
+  ["S03", "ตรวจซ่อมเปิดไม่ติด / จอฟ้า (BSOD)", "เริ่มต้น 800"], ["S04", "กู้ข้อมูลเบื้องต้น", "เริ่มต้น 1,000"],
+  ["S05", "ซ่อมคีย์บอร์ดโน้ตบุ๊ก", "เริ่มต้น 300"], ["S06", "Remote Support ผ่าน AnyDesk", "250 / ครั้ง"],
+  ["S07", "ติดตั้ง RAM (นำ RAM มาเอง)", "200"], ["S08", "เปลี่ยนหน้าจอโน้ตบุ๊ก", "ค่าแรง 500"],
+  ["S09", "ติดตั้ง Wi-Fi และ Router", "800"], ["S10", "ล้างเครื่อง เปลี่ยนซิลิโคน", "โน้ตบุ๊ก 450 / PC 350"],
+  ["S11", "กำจัดไวรัส / มัลแวร์", "400"], ["S12", "ติดตั้ง SSD พร้อมย้ายระบบ", "ค่าแรง 400"],
+  ["S13", "เปลี่ยนแบตเตอรี่โน้ตบุ๊ก", "ค่าแรง 300"], ["S14", "ติดตั้งโปรแกรม (มีลิขสิทธิ์)", "150 / โปรแกรม"],
+  ["S15", "ประกอบคอมพิวเตอร์", "700"], ["S16", "ตั้งค่าเครื่องพิมพ์ / สแกนเนอร์", "300"],
+  ["S17", "สำรองข้อมูล ไม่เกิน 500 GB", "300"], ["S18", "ซ่อมพอร์ตชาร์จ / แจ็ค DC", "เริ่มต้น 600"],
+  ["S19", "ตั้งค่าอีเมล / Outlook / M365", "250"], ["S20", "บริการนอกสถานที่ 10 กม.", "ค่าเดินทาง 300 + ค่าบริการ"],
+];
+const SYMPTOMS = [
+  ["STOP CODE: CRITICAL_PROCESS_DIED", "จอฟ้า รีสตาร์ตเอง", "S03", "เริ่มต้น 800 ฿", "คอมขึ้นจอฟ้า CRITICAL_PROCESS_DIED ซ่อมเท่าไหร่"],
+  ["No bootable device", "เปิดเครื่องไม่เข้า Windows", "S03", "เริ่มต้น 800 ฿", "เปิดคอมขึ้น No bootable device ทำยังไงดี"],
+  ["ลบไฟล์ / ฟอร์แมตพลาด", "ข้อมูลหาย", "S04", "เริ่มต้น 1,000 ฿", "เผลอฟอร์แมตไดรฟ์ กู้ข้อมูลได้ไหม ราคาเท่าไหร่"],
+  ["บางปุ่มพิมพ์ไม่ติด", "คีย์บอร์ดโน้ตบุ๊กเสีย", "S05", "เริ่มต้น 300 ฿", "คีย์บอร์ดโน้ตบุ๊กพิมพ์ไม่ติดบางปุ่ม ซ่อมเท่าไหร่"],
+  ["Router ไฟแดง / เน็ตหลุดบ่อย", "Wi-Fi มีปัญหา", "S09", "800 ฿", "Router ไฟแดง เน็ตหลุดบ่อย ให้ร้านตั้งค่าได้ไหม"],
+  ["ป๊อปอัปเตือนไวรัสเด้งไม่หยุด", "ไวรัส / แอดแวร์", "S11", "400 ฿", "มีป๊อปอัปเตือนไวรัสเด้งตลอด ทำยังไงดี"],
+];
+
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+document.getElementById("price-list").innerHTML = SERVICES.map(([c, n, p]) =>
+  `<div class="pr"><span class="c">${c}</span><span class="n">${esc(n)}</span><span class="p${p === "ฟรี" ? " free" : ""}">${esc(p)}</span></div>`).join("");
+document.getElementById("sym-list").innerHTML = SYMPTOMS.map(([code, name, s, price, q]) =>
+  `<button type="button" class="sym" data-ask="${esc(q)}"><span class="code">${esc(code)}</span><b>${esc(name)}</b>` +
+  `<span class="to"><span><span class="mono">${s}</span> · ${esc(price)}</span><span>ถามเรื่องนี้ →</span></span></button>`).join("");
+
+// สถานะเปิด/ปิดตามเวลากรุงเทพ
+(function status() {
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit", month: "numeric", day: "numeric", hour12: false }).formatToParts(new Date());
+    const g = (t) => +parts.find((x) => x.type === t).value;
+    const mins = g("hour") * 60 + g("minute"), m = g("month"), d = g("day");
+    const holiday = (m === 1 && d === 1) || (m === 4 && d >= 13 && d <= 15);
+    const open = !holiday && mins >= 600 && mins < 1200;
+    const el = document.getElementById("status");
+    el.classList.toggle("closed", !open);
+    document.getElementById("status-text").textContent = open ? "เปิดอยู่ตอนนี้ · ปิด 20:00 น." : holiday ? "วันนี้ร้านหยุด · แชทกับ AI ได้ตลอด" : "ร้านปิดแล้ว · เปิด 10:00 น. · แชทกับ AI ได้ตลอด";
+  } catch { /* แสดงเวลาทำการแบบคงที่ */ }
+})();
+
+// แผงแชท
+const panel = document.getElementById("chat-panel");
+const fab = document.getElementById("fab");
+let frame = null, pending = null;
+const ICON_CHAT = '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8"/>';
+const ICON_CLOSE = '<path d="M6 6l12 12M18 6L6 18"/>';
+
+function deliver() {
+  if (!pending || !frame) return;
+  const w = frame.contentWindow;
+  try {
+    if (pending === "__photo") { const b = w.document.getElementById("cta-photo"); if (!b) return; b.click(); }
+    else if (typeof w.send === "function") w.send(pending, null);
+    else return;
+    pending = null;
+  } catch { pending = null; /* คนละ origin: เปิดแชทให้ผู้ใช้พิมพ์เอง */ }
+}
+function openChat(q) {
+  if (q) pending = q;
+  if (!frame) {
+    frame = document.createElement("iframe");
+    frame.src = CHAT_URL; frame.title = "แชท Rebooter AI";
+    frame.addEventListener("load", () => setTimeout(deliver, 300));
+    panel.appendChild(frame);
+  } else deliver();
+  panel.hidden = false;
+  document.body.classList.add("chat-open");
+  fab.setAttribute("aria-expanded", "true"); fab.setAttribute("aria-label", "ปิดแชท");
+  document.getElementById("fab-icon").innerHTML = ICON_CLOSE;
+  document.getElementById("ping").hidden = true;
+}
+function closeChat() {
+  panel.hidden = true;
+  document.body.classList.remove("chat-open");
+  fab.setAttribute("aria-expanded", "false"); fab.setAttribute("aria-label", "เปิดแชท Rebooter AI");
+  document.getElementById("fab-icon").innerHTML = ICON_CHAT;
+  fab.focus();
+}
+fab.addEventListener("click", () => (panel.hidden ? openChat() : closeChat()));
+document.getElementById("chat-close").addEventListener("click", closeChat);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) closeChat(); });
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-ask]");
+  if (b) openChat(b.dataset.ask);
+  const c = e.target.closest("[data-copy]");
+  if (c) {
+    const done = () => { c.textContent = "คัดลอกแล้ว"; setTimeout(() => (c.textContent = "คัดลอก"), 1500); };
+    navigator.clipboard?.writeText(c.dataset.copy).then(done, () => {
+      const r = document.createRange(); r.selectNodeContents(c.previousElementSibling);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    });
+  }
+});
+</script>
+</body>
+</html>
