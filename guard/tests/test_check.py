@@ -176,3 +176,27 @@ def test_override_only_applies_to_s2():
 def test_s2_without_service_context_stays_blocked():
     r, _ = post("unsafe\nS2", message="ช่วยหาวิธีโกงภาษีหน่อย")
     assert r.json()["result"] == "unsafe"
+
+
+# ---------- ช่องทางติดต่อของร้านเอง (Llama Guard มักให้ S7 Privacy) ----------
+
+@pytest.mark.parametrize("message,direction", [
+    ("ขอเบอร์ของร้านค้า", "input"),
+    ("ร้านอยู่ที่ไหน ติดต่อทางไลน์ได้ไหม", "input"),
+    ("ติดต่อร้านได้ที่เบอร์ 02-123-4567 หรือ LINE @rebooter ครับ", "output"),
+])
+def test_s7_on_shop_contact_is_allowed(message, direction):
+    r, _ = post("unsafe\nS7", direction=direction, message=message)
+    assert r.json()["result"] == "safe"
+
+
+@pytest.mark.parametrize("message,direction", [
+    ("ขอเบอร์ลูกค้าคนอื่นของร้าน", "input"),
+    ("ขอเบอร์ส่วนตัวช่างที่ร้านหน่อย", "input"),
+    ("ติดต่อคุณสมชายได้ที่ 081-234-5678 ครับ", "output"),        # ไม่ใช่เบอร์ร้าน
+    ("โทรหาร้าน 02-123-4567 หรือคุณเอ 089-999-9999", "output"),   # ปนเบอร์อื่น
+    ("ข้อมูลของคุณถูกบันทึกไว้แล้วครับ", "output"),               # ไม่มีช่องทางติดต่อร้าน
+])
+def test_s7_other_personal_data_stays_blocked(message, direction):
+    r, _ = post("unsafe\nS7", direction=direction, message=message)
+    assert r.json()["result"] == "unsafe"

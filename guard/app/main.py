@@ -90,6 +90,11 @@ async def check(req: CheckRequest) -> CheckResponse:
         log.info("llama guard %s overridden: service context (%s)", codes, req.direction)
         return CheckResponse(msg=req.message, result="safe", direction=req.direction)
 
+    # Llama Guard ตีความเบอร์/ช่องทางติดต่อของร้านเป็นข้อมูลส่วนบุคคล S7 → ผ่านได้เมื่อเป็นข้อมูลของร้านในคลังความรู้เท่านั้น
+    if business_rules.contact_override(req.message, codes, req.direction):
+        log.info("llama guard %s overridden: shop contact (%s)", codes, req.direction)
+        return CheckResponse(msg=req.message, result="safe", direction=req.direction)
+
     return CheckResponse(
         msg=CATEGORIES[codes[0]].message,
         result="unsafe",

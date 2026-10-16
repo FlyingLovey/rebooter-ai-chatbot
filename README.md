@@ -37,7 +37,7 @@ Final Project วิชา 06048308 Intelligent Chatbot Development — งา�
 │   │   ├── prompts/             system.txt (ต้องทำ/ห้ามทำ), vision.txt
 │   │   └── static/              home.html (หน้าแรกร้าน /), index.html + style.css + app.js (แชท /chat)
 │   └── tests/                   pytest 22 กรณี (จำลอง LLM/Guard ไม่ต้องใช้ key)
-├── guard/                       Guard Service (FastAPI :8001) + pytest 63 กรณี
+├── guard/                       Guard Service (FastAPI :8001) + pytest 71 กรณี
 ├── knowledge/
 │   └── Rebooter.md              คลังความรู้ของร้าน
 ├── eval/
@@ -108,7 +108,7 @@ uv run python ../eval/run_eval.py --only rag    # เฉพาะชุด
 
 ```bash
 cd guard
-uv run pytest -q                   # 63 passed
+uv run pytest -q                   # 71 passed
 cd ../backend
 uv run pytest -q                   # 22 passed
 ```
@@ -156,7 +156,7 @@ uv run pytest -q                   # 22 passed
 | ส่วน | สถานะ |
 | :--- | :--- |
 | คลังความรู้ (บริการ 20 รายการ, นโยบาย 8 ข้อ) | ✅ |
-| Guard Service 3 ชั้น | ✅ pytest 63 กรณี |
+| Guard Service 3 ชั้น | ✅ pytest 71 กรณี |
 | Backend: RAG + Vision + Guard + ประวัติแชท | ✅ pytest 22 กรณี |
 | Web UI | ✅ [ภาพหน้าจอ](docs/mockups/) |
 | แผนภาพสถาปัตยกรรม + Data Flow | ✅ [docs/architecture.md](docs/architecture.md) |

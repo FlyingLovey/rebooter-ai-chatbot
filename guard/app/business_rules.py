@@ -121,6 +121,15 @@ def extract_prices(text: str) -> set[int]:
     return out
 
 
+# ถามช่องทางติดต่อ/ที่ตั้งของร้านเอง (ข้อมูลสาธารณะ) — ใช้ยกเลิกผล S7 ของ Llama Guard
+_SHOP_CONTACT_ASK = _p(
+    r"(เบอร์|โทร|ติดต่อ|ไลน์|line|อีเมล|email|ที่อยู่|ที่ตั้ง|แผนที่)\S{0,15}(ร้าน|rebooter)",
+    r"(ร้าน|rebooter)\S{0,15}(เบอร์|โทร|ติดต่อ|ไลน์|line|อีเมล|email|ที่อยู่|ที่ตั้ง|อยู่ที่ไหน|อยู่ไหน)",
+)
+# อ้างถึงบุคคลอื่น → ไม่ยกเลิกการบล็อก
+_OTHER_PERSON = _p(r"ลูกค้า(คน|ท่าน)?(อื่น|นั้น|ที่)", r"คนอื่น", r"ของ(เขา|เธอ|เพื่อน|แฟน)", r"เบอร์ส่วนตัว", r"บ้านช่าง|ช่าง\S{0,6}(เบอร์|บ้าน)")
+
+
 class KnowledgeFacts:
     """อ่านราคา / เบอร์โทร / อีเมลที่ "อนุญาต" จากไฟล์คลังความรู้ของร้าน
     รีโหลดเองเมื่อไฟล์ถูกแก้ (เหมือน blocklist) — ถ้าไม่ได้ตั้ง path จะปิดการตรวจฝั่ง output ที่ต้องใช้ KB"""
@@ -166,6 +175,25 @@ class BusinessRules:
         if direction == "input":
             return self._check_input(message)
         return self._check_output(message)
+
+    def contact_override(self, text: str, codes: list[str], direction: str) -> bool:
+        """True = Llama Guard ให้ S7 (Privacy) กับการถาม/ให้ช่องทางติดต่อของร้านเอง ซึ่งเป็นข้อมูลสาธารณะในคลังความรู้"""
+        if not codes or not set(codes) <= {"S7"}:
+            return False
+        compact = re.sub(r"\s+", "", text)
+        if any(p.search(text) or p.search(compact) for p in _OTHER_PERSON):
+            return False
+        if direction == "input":
+            return any(p.search(text) or p.search(compact) for p in _SHOP_CONTACT_ASK)
+        # ขาออก: ทุกเบอร์/อีเมลในคำตอบต้องเป็นของร้านตามคลังความรู้ และต้องมีอย่างน้อยหนึ่งรายการ
+        if not self.kb.loaded or _ID13_RE.search(text):
+            return False
+        phones = [_digits(x) for x in _PHONE_RE.findall(text) + _PHONE_INTL_RE.findall(text)]
+        emails = [e.casefold() for e in _EMAIL_RE.findall(text)]
+        has_line = bool(re.search(r"@rebooter\b", text, re.IGNORECASE))
+        if not (phones or emails or has_line):
+            return False
+        return all(p in self.kb.phones for p in phones) and all(e in self.kb.emails for e in emails)
 
     def _check_input(self, text: str) -> str | None:
         for rule in _INPUT_RULES:
