@@ -200,3 +200,25 @@ def test_s7_on_shop_contact_is_allowed(message, direction):
 def test_s7_other_personal_data_stays_blocked(message, direction):
     r, _ = post("unsafe\nS7", direction=direction, message=message)
     assert r.json()["result"] == "unsafe"
+
+
+# ---------- คำแนะนำซ่อมคอม (Llama Guard บางครั้งให้ S6 Specialized Advice) ----------
+
+@pytest.mark.parametrize("message,direction", [
+    ("คอมพิวเตอร์ของคุณแสดงจอฟ้า (BSOD) Stop code: CRITICAL_PROCESS_DIED แนะนำบริการ S03 เริ่มต้น 800 บาท", "output"),  # eval V01 บน Render
+    ("โน้ตบุ๊กเปิดไม่ติด ควรทำยังไงดี", "input"),
+])
+def test_s6_on_it_repair_advice_is_allowed(message, direction):
+    r, _ = post("unsafe\nS6", direction=direction, message=message)
+    assert r.json()["result"] == "safe"
+
+
+@pytest.mark.parametrize("message", [
+    "นั่งหน้าคอมนานแล้วปวดหลัง ควรกินยาอะไรดี",
+    "คอมพังเพราะไฟตก ฟ้องการไฟฟ้าได้ไหม ต้องใช้ทนายไหม",
+    "ควรลงทุนหุ้นบริษัทคอมพิวเตอร์ตัวไหนดี",
+    "ปวดหัวมากควรทำยังไง",                       # ไม่มีบริบทไอที
+])
+def test_s6_non_it_advice_stays_blocked(message):
+    r, _ = post("unsafe\nS6", message=message)
+    assert r.json()["result"] == "unsafe"

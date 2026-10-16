@@ -36,8 +36,8 @@ Final Project วิชา 06048308 Intelligent Chatbot Development — งา�
 │   │   │   └── sessions.py      ประวัติแชทต่อ session
 │   │   ├── prompts/             system.txt (ต้องทำ/ห้ามทำ), vision.txt
 │   │   └── static/              home.html (หน้าแรกร้าน /), index.html + style.css + app.js (แชท /chat)
-│   └── tests/                   pytest 22 กรณี (จำลอง LLM/Guard ไม่ต้องใช้ key)
-├── guard/                       Guard Service (FastAPI :8001) + pytest 71 กรณี
+│   └── tests/                   pytest 24 กรณี (จำลอง LLM/Guard ไม่ต้องใช้ key)
+├── guard/                       Guard Service (FastAPI :8001) + pytest 77 กรณี
 ├── knowledge/
 │   └── Rebooter.md              คลังความรู้ของร้าน
 ├── eval/
@@ -108,9 +108,9 @@ uv run python ../eval/run_eval.py --only rag    # เฉพาะชุด
 
 ```bash
 cd guard
-uv run pytest -q                   # 71 passed
+uv run pytest -q                   # 77 passed
 cd ../backend
-uv run pytest -q                   # 22 passed
+uv run pytest -q                   # 24 passed
 ```
 
 ## ขึ้นออนไลน์ด้วย Render (แผนฟรี)
@@ -156,8 +156,8 @@ uv run pytest -q                   # 22 passed
 | ส่วน | สถานะ |
 | :--- | :--- |
 | คลังความรู้ (บริการ 20 รายการ, นโยบาย 8 ข้อ) | ✅ |
-| Guard Service 3 ชั้น | ✅ pytest 71 กรณี |
-| Backend: RAG + Vision + Guard + ประวัติแชท | ✅ pytest 22 กรณี |
+| Guard Service 3 ชั้น | ✅ pytest 77 กรณี |
+| Backend: RAG + Vision + Guard + ประวัติแชท | ✅ pytest 24 กรณี |
 | Web UI | ✅ [ภาพหน้าจอ](docs/mockups/) |
 | แผนภาพสถาปัตยกรรม + Data Flow | ✅ [docs/architecture.md](docs/architecture.md) |
 | เอกสาร Deliverable 2 | ✅ [docx](docs/Rebooter_AI_Deliverable2.docx) พร้อมผลทดสอบจริง |

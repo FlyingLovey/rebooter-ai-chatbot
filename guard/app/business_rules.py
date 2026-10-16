@@ -259,3 +259,26 @@ def service_override(text: str, codes: list[str]) -> bool:
     compact = re.sub(r"\s+", "", text)
     hit = lambda pats: any(p.search(text) or p.search(compact) for p in pats)  # noqa: E731
     return hit(_SERVICE_CONTEXT) and not hit(_ATTACK_INTENT)
+
+
+# ---------- Llama Guard S6 (Specialized Advice) กับคำแนะนำซ่อมคอม ----------
+# S6 มีไว้กันคำแนะนำทางการแพทย์ กฎหมาย การเงิน แต่บางครั้งโมเดลให้ S6 กับคำแนะนำซ่อมคอม (เช่น อาการจอฟ้า)
+_IT_CONTEXT = _p(
+    r"คอม|โน้ตบุ๊ก|notebook|laptop|\bpc\b|จอ|windows|วินโดว์|ไดรฟ์|ssd|ram|แรม|bsod|stop\s*code|error|บูต|boot",
+    r"ซ่อม|ตรวจเช็ค|บริการ|ไดรเวอร์|โปรแกรม|ไวรัส|เครื่องพิมพ์|ปริ้น|เราเตอร์|wi-?fi|คีย์บอร์ด|แบต",
+    r"\bS\d{2}\b",
+)
+_NON_IT_ADVICE = _p(
+    r"แพทย์|หมอ|ยา(?!ก)|โรค|อาการป่วย|รักษาตัว|ผ่าตัด|ตั้งครรภ์|medical|doctor",
+    r"กฎหมาย|ทนาย|ฟ้อง|คดี|ศาล|สัญญาเช่า|lawyer|legal",
+    r"ลงทุน|หุ้น|คริปโต|crypto|กู้เงิน|สินเชื่อ|ภาษี|ประกันชีวิต|invest",
+)
+
+
+def advice_override(text: str, codes: list[str]) -> bool:
+    """True = ผล S6 ของ Llama Guard เป็นผลบวกลวงจากคำแนะนำซ่อมคอมของร้าน"""
+    if not codes or not set(codes) <= {"S6"}:
+        return False
+    compact = re.sub(r"\s+", "", text)
+    hit = lambda pats: any(p.search(text) or p.search(compact) for p in pats)  # noqa: E731
+    return hit(_IT_CONTEXT) and not hit(_NON_IT_ADVICE)

@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .blocklist import Blocklist
-from .business_rules import BusinessRules, service_override
+from .business_rules import BusinessRules, advice_override, service_override
 from .categories import BLOCKLIST_CODE, BLOCKLIST_MESSAGE, BUSINESS_MESSAGES, CATEGORIES
 from .guard import GuardError, classify
 from .settings import get_settings
@@ -88,6 +88,11 @@ async def check(req: CheckRequest) -> CheckResponse:
     # Llama Guard ตีความงานบริการของร้าน (กู้ข้อมูล / ไวรัส) เป็นอาชญากรรม S2 → ยอมให้ผ่านเฉพาะเมื่อไม่มีเจตนาโจมตี
     if service_override(req.message, codes):
         log.info("llama guard %s overridden: service context (%s)", codes, req.direction)
+        return CheckResponse(msg=req.message, result="safe", direction=req.direction)
+
+    # Llama Guard ให้ S6 (คำแนะนำเฉพาะทาง) กับคำแนะนำซ่อมคอม → ผ่านได้เมื่อเป็นเรื่องไอทีและไม่แตะการแพทย์/กฎหมาย/การเงิน
+    if advice_override(req.message, codes):
+        log.info("llama guard %s overridden: IT repair advice (%s)", codes, req.direction)
         return CheckResponse(msg=req.message, result="safe", direction=req.direction)
 
     # Llama Guard ตีความเบอร์/ช่องทางติดต่อของร้านเป็นข้อมูลส่วนบุคคล S7 → ผ่านได้เมื่อเป็นข้อมูลของร้านในคลังความรู้เท่านั้น
