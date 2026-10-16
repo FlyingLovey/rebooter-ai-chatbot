@@ -42,6 +42,14 @@ def test_health(client):
     assert j["status"] == "ok" and j["kb_chunks"] >= 28 and j["guard"] == "ok"
 
 
+def test_health_gives_wake_url_when_guard_down(client, upstream):
+    # Guard หลับ → /health ต้องบอก URL ให้เบราว์เซอร์ช่วยปลุก
+    assert client.get("/health").json()["guard_wake_url"] is None
+    upstream.guard_status = 502
+    j = client.get("/health").json()
+    assert j["guard"] == "down" and j["guard_wake_url"].endswith("/health")
+
+
 def test_home_page(client):
     r = client.get("/")
     assert r.status_code == 200 and "Rebooter AI" in r.text and 'CHAT_URL = "/chat"' in r.text

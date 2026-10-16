@@ -297,10 +297,18 @@ function showGuardDown(down) {
 }
 // Guard อาจกำลังตื่น (บริการฟรีหลับเมื่อว่าง) → แสดง "กำลังเตรียมระบบ" แล้วเช็กซ้ำทุก 8 วิ นานสุด ~2 นาที ก่อนแจ้งว่าขัดข้อง
 let healthTries = 0;
+// ปลุก Guard จากเบราว์เซอร์โดยตรง (ครั้งเดียวต่อการเปิดหน้า) — ไม่ต้องอ่านผล จึงใช้ no-cors
+let guardWoken = false;
+function wakeGuard(url) {
+  if (guardWoken || !url) return;
+  guardWoken = true;
+  fetch(url, { mode: "no-cors", cache: "no-store" }).catch(() => {});
+}
 async function checkHealth() {
   try {
     const j = await api.health();
     if (j.guard !== "down") { healthTries = 0; showGuardDown(false); return; }
+    wakeGuard(j.guard_wake_url);
     if (++healthTries <= 15) {
       $("banner").hidden = true;
       $("status").className = "status";

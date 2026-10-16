@@ -17,6 +17,7 @@ from .services.sessions import SessionStore
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("aura")
+WAKE_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; RebooterAI-wake/1.0)"}
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -62,7 +63,8 @@ def create_app(settings: Settings | None = None, embedder: Embedder | None = Non
 
         async def ping():
             try:
-                await st.http.get(f"{st.settings.guard_url.rstrip('/')}/health", timeout=st.settings.guard_timeout_seconds)
+                await st.http.get(f"{st.settings.guard_url.rstrip('/')}/health", timeout=st.settings.guard_timeout_seconds,
+                                  headers=WAKE_HEADERS)
             except Exception:  # noqa: BLE001 — ปลุกไม่สำเร็จไม่เป็นไร คำขอจริงจะลองใหม่เอง
                 pass
 
@@ -85,7 +87,7 @@ def create_app(settings: Settings | None = None, embedder: Embedder | None = Non
         guard = "disabled"
         if st.settings.guard_enabled:
             try:
-                r = await st.http.get(f"{st.settings.guard_url.rstrip('/')}/health", timeout=3)
+                r = await st.http.get(f"{st.settings.guard_url.rstrip('/')}/health", timeout=3, headers=WAKE_HEADERS)
                 guard = "ok" if r.status_code == 200 else "down"
             except httpx.HTTPError:
                 guard = "down"
@@ -95,6 +97,8 @@ def create_app(settings: Settings | None = None, embedder: Embedder | None = Non
             "status": "ok",
             "kb_chunks": len(st.kb.chunks),
             "guard": guard,
+            # ให้เบราว์เซอร์ช่วยปลุก Guard ได้ด้วย (Render แผนฟรีปลุกบริการเมื่อมีคำขอจากผู้ใช้เข้ามาตรง ๆ)
+            "guard_wake_url": f"{st.settings.guard_url.rstrip('/')}/health" if guard == "down" else None,
             "chat_model": st.settings.chat_model,
             "vision_model": st.settings.vision_model,
         }

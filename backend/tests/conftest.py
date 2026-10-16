@@ -64,7 +64,7 @@ class FakeUpstream:
                 return httpx.Response(200, json={"msg": msg, "result": "unsafe", "direction": d, "categories": cats})
             return httpx.Response(200, json={"msg": body["message"], "result": "safe", "direction": d, "categories": []})
         if request.url.path.endswith("/health"):
-            return httpx.Response(200, json={"status": "ok"})
+            return httpx.Response(self.guard_status, json={"status": "ok"})
         if request.url.path.endswith("/chat/completions"):
             self.llm_calls.append(body)
             if self.llm_status != 200:

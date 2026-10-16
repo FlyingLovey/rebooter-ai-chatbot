@@ -387,6 +387,14 @@ document.getElementById("sym-list").innerHTML = SYMPTOMS.map(([code, name, s, pr
   `<button type="button" class="sym" data-ask="${esc(q)}"><span class="code">${esc(code)}</span><b>${esc(name)}</b>` +
   `<span class="to"><span><span class="mono">${s}</span> · ${esc(price)}</span><span>ถามเรื่องนี้ →</span></span></button>`).join("");
 
+// ปลุกระบบหลังบ้านตั้งแต่เปิดหน้าแรก: บริการแผนฟรีหลับเมื่อว่าง ถ้าปลุกไว้ก่อน ลูกค้ากดแชตแล้วจะตอบได้เร็วขึ้น
+(function warmUp() {
+  fetch("/health", { cache: "no-store" })
+    .then((r) => r.json())
+    .then((j) => { if (j.guard_wake_url) fetch(j.guard_wake_url, { mode: "no-cors", cache: "no-store" }).catch(() => {}); })
+    .catch(() => {});
+})();
+
 // สถานะเปิด/ปิดตามเวลากรุงเทพ
 (function status() {
   try {
