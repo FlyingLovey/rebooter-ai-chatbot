@@ -295,9 +295,19 @@ function showGuardDown(down) {
   $("status").className = "status " + (down ? "down" : "ok");
   $("status-text").textContent = down ? "ระบบขัดข้องชั่วคราว" : "ออนไลน์ · เปิดทุกวัน 10:00–20:00";
 }
+// Guard อาจกำลังตื่น (บริการฟรีหลับเมื่อว่าง) → แสดง "กำลังเตรียมระบบ" แล้วเช็กซ้ำทุก 8 วิ นานสุด ~2 นาที ก่อนแจ้งว่าขัดข้อง
+let healthTries = 0;
 async function checkHealth() {
-  try { const j = await api.health(); showGuardDown(j.guard === "down"); }
-  catch { $("status").className = "status down"; $("status-text").textContent = "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้"; }
+  try {
+    const j = await api.health();
+    if (j.guard !== "down") { healthTries = 0; showGuardDown(false); return; }
+    if (++healthTries <= 15) {
+      $("banner").hidden = true;
+      $("status").className = "status";
+      $("status-text").textContent = "กำลังเตรียมระบบ อาจใช้เวลาประมาณ 1 นาที…";
+      setTimeout(checkHealth, 8000);
+    } else showGuardDown(true);
+  } catch { $("status").className = "status down"; $("status-text").textContent = "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้"; }
 }
 
 // ---------- events ----------

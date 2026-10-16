@@ -1,3 +1,5 @@
+import asyncio
+import time
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -47,13 +49,34 @@ def create_app(settings: Settings | None = None, embedder: Embedder | None = Non
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     app.include_router(chat_router)
 
+    def wake_guard() -> None:
+        """ปลุก Guard แบบไม่รอผล (บน Render แผนฟรี Guard จะหลับหลังว่าง 15 นาที ตื่นช้าราว 1 นาที)
+        เรียกทุกครั้งที่มีคนเปิดหน้าเว็บ — จำกัดไม่เกิน 1 ครั้งต่อ 60 วินาที"""
+        st = app.state
+        if not getattr(st, "settings", None) or not st.settings.guard_enabled:
+            return
+        now = time.monotonic()
+        if now - getattr(st, "last_wake", -1e9) < 60:
+            return
+        st.last_wake = now
+
+        async def ping():
+            try:
+                await st.http.get(f"{st.settings.guard_url.rstrip('/')}/health", timeout=st.settings.guard_timeout_seconds)
+            except Exception:  # noqa: BLE001 — ปลุกไม่สำเร็จไม่เป็นไร คำขอจริงจะลองใหม่เอง
+                pass
+
+        st.wake_task = asyncio.create_task(ping())
+
     @app.get("/", include_in_schema=False)
     async def home():
         # หน้าแรกของร้าน มีปุ่มแชทลอยที่เปิด /chat
+        wake_guard()
         return FileResponse(STATIC_DIR / "home.html")
 
     @app.get("/chat", include_in_schema=False)
     async def chat_page():
+        wake_guard()
         return FileResponse(STATIC_DIR / "index.html")
 
     @app.get("/health")
@@ -66,6 +89,8 @@ def create_app(settings: Settings | None = None, embedder: Embedder | None = Non
                 guard = "ok" if r.status_code == 200 else "down"
             except httpx.HTTPError:
                 guard = "down"
+            if guard == "down":
+                wake_guard()
         return {
             "status": "ok",
             "kb_chunks": len(st.kb.chunks),
