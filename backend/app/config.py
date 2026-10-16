@@ -3,6 +3,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # โฟลเดอร์ backend/ — path แบบ relative ใน .env จะอ้างอิงจากที่นี่ ไม่ขึ้นกับว่ารันจากโฟลเดอร์ไหน
@@ -34,6 +35,15 @@ class Settings(BaseSettings):
     # --- Guard Service ---
     guard_enabled: bool = True
     guard_url: str = "http://127.0.0.1:8001"
+
+    @field_validator("guard_url", "llm_base_url", "embedding_base_url")
+    @classmethod
+    def _add_scheme(cls, v: str) -> str:
+        # กันกรอก URL ไม่มี https:// (เช่น "rebooter-guard.onrender.com") และตัด / ท้าย
+        v = (v or "").strip().rstrip("/")
+        if v and not v.startswith(("http://", "https://")):
+            v = "https://" + v
+        return v
     guard_timeout_seconds: float = 25.0
 
     # --- App ---
