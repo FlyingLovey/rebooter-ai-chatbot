@@ -192,3 +192,22 @@ def test_index_rebuilds_when_embedding_model_changes(tmp_path):
     h1 = kb1.collection.metadata["kb_hash"]
     kb2 = KnowledgeBase(KB_PATH, tmp_path, Other()); kb2.build()
     assert kb2.collection.metadata["kb_hash"] != h1
+
+
+def test_keyword_boost_finds_thai_alias_for_english_service():
+    # embedding ปลอมที่ไม่ช่วยอะไร → ต้องเจอ S06 จากคำค้น "ช่างรีโมท" ใน Rebooter.md
+    class Blind(FakeEmbedder):
+        def _vec(self, text):
+            return [1.0] + [0.0] * (self.dim - 1)
+
+    kb = KnowledgeBase(KB_PATH, None, Blind()); kb.build()
+    ids = [c.id for c in kb.search("ให้ช่างรีโมทมาดูเครื่องให้หน่อย คิดราคายังไง", top_k=4)]
+    assert ids[0] == "S06" and len(ids) == 4
+
+
+def test_keyword_line_has_no_prices():
+    # บรรทัดคำค้นต้องไม่มีราคา เพื่อไม่ให้กระทบการตรวจราคาของ Guard
+    import re as _re
+    for line in KB_PATH.read_text(encoding="utf-8").splitlines():
+        if "คำค้นที่ลูกค้ามักใช้" in line:
+            assert not _re.search(r"\d\s*(บาท|฿)", line)

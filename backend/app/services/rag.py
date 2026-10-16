@@ -114,7 +114,34 @@ class KnowledgeBase:
         out = []
         for cid, doc, meta, dist in zip(res["ids"][0], res["documents"][0], res["metadatas"][0], res["distances"][0]):
             out.append(Chunk(id=cid, title=meta.get("title", ""), text=doc, score=round(1 - dist, 4)))
-        return out
+        return self._keyword_boost(query, out, top_k)
+
+    # ---------- ค้นแบบผสม: คำค้นที่ลูกค้ามักใช้ ----------
+    # embedding บางตัว (เช่น text-embedding-3-small) จับคู่คำไทยกับชื่อบริการภาษาอังกฤษได้ไม่ดี
+    # เช่น "ช่างรีโมท" กับ "Remote Support ผ่าน AnyDesk" จึงดันหัวข้อที่มีคำค้นตรงกับคำถามขึ้นมาก่อน (สูงสุด 2 หัวข้อ)
+    def _keyword_boost(self, query: str, found: list[Chunk], top_k: int) -> list[Chunk]:
+        q = _norm(query)
+        hits = [c for c in self.chunks if any(k in q for k in _keywords(c.text))][:2]
+        if not hits:
+            return found
+        have = {c.id for c in found}
+        boosted = [Chunk(id=c.id, title=c.title, text=c.text, score=1.0) for c in hits if c.id not in have]
+        rest = sorted(found, key=lambda c: c.id not in {h.id for h in hits})  # ที่ตรงคำค้นขึ้นก่อน
+        return (boosted + rest)[:top_k]
+
+
+_KW_LINE = re.compile(r"คำค้นที่ลูกค้ามักใช้\s*:\s*(.+)")
+
+
+def _norm(text: str) -> str:
+    return re.sub(r"\s+", "", text).casefold()
+
+
+def _keywords(text: str) -> list[str]:
+    m = _KW_LINE.search(text)
+    if not m:
+        return []
+    return [k for k in (_norm(x) for x in m.group(1).split(",")) if len(k) >= 3]
 
 
 def format_context(chunks: list[Chunk]) -> str:
