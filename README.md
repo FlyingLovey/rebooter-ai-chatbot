@@ -36,7 +36,7 @@ Final Project วิชา 06048308 Intelligent Chatbot Development — งา�
 │   │   │   └── sessions.py      ประวัติแชทต่อ session
 │   │   ├── prompts/             system.txt (ต้องทำ/ห้ามทำ), vision.txt
 │   │   └── static/              home.html (หน้าแรกร้าน /), index.html + style.css + app.js (แชท /chat)
-│   └── tests/                   pytest 20 กรณี (จำลอง LLM/Guard ไม่ต้องใช้ key)
+│   └── tests/                   pytest 22 กรณี (จำลอง LLM/Guard ไม่ต้องใช้ key)
 ├── guard/                       Guard Service (FastAPI :8001) + pytest 63 กรณี
 ├── knowledge/
 │   └── Rebooter.md              คลังความรู้ของร้าน
@@ -110,8 +110,22 @@ uv run python ../eval/run_eval.py --only rag    # เฉพาะชุด
 cd guard
 uv run pytest -q                   # 63 passed
 cd ../backend
-uv run pytest -q                   # 20 passed
+uv run pytest -q                   # 22 passed
 ```
+
+## ขึ้นออนไลน์ด้วย Render (แผนฟรี)
+
+ไฟล์ [`render.yaml`](render.yaml) สร้าง 2 บริการให้: `rebooter-guard` และ `rebooter-ai`
+
+1. Render → **New → Blueprint** → เลือก repo นี้ → Apply
+2. กรอกค่าลับที่ Render ถาม: `OPENROUTER_API_KEY` (guard), `LLM_API_KEY` และ `EMBEDDING_API_KEY` (ใช้ OpenRouter key เดียวกัน)
+3. รอ `rebooter-guard` ขึ้นก่อน แล้วนำ URL ของมัน (เช่น `https://rebooter-guard.onrender.com`) ไปใส่ `GUARD_URL` ของ `rebooter-ai` → Save → redeploy
+4. เปิด `https://rebooter-ai.onrender.com/health` ต้องเห็น `"kb_chunks": 33` และ `"guard": "ok"`
+
+> แผนฟรีมี RAM 512 MB จึงใช้ embedding ผ่าน API ของ OpenRouter (`openai/text-embedding-3-small`) แทนโมเดลในเครื่อง
+> ผลค้นคืนจึงอาจต่างจากตอนรันบนเครื่องเล็กน้อย — รันชุดทดสอบกับเว็บออนไลน์ได้ด้วย `uv run python ../eval/run_eval.py --base-url https://rebooter-ai.onrender.com`
+> บริการฟรีจะหลับหลังว่าง 15 นาที เปิดครั้งแรกรอราว 1 นาที — ก่อนนำเสนอให้เปิด `/health` ของทั้งสองบริการทิ้งไว้
+> ประวัติแชทเก็บในหน่วยความจำ หายเมื่อบริการหลับหรือ deploy ใหม่
 
 ## วิธีใช้งานหน้าแชท
 
@@ -143,7 +157,7 @@ uv run pytest -q                   # 20 passed
 | :--- | :--- |
 | คลังความรู้ (บริการ 20 รายการ, นโยบาย 8 ข้อ) | ✅ |
 | Guard Service 3 ชั้น | ✅ pytest 63 กรณี |
-| Backend: RAG + Vision + Guard + ประวัติแชท | ✅ pytest 20 กรณี |
+| Backend: RAG + Vision + Guard + ประวัติแชท | ✅ pytest 22 กรณี |
 | Web UI | ✅ [ภาพหน้าจอ](docs/mockups/) |
 | แผนภาพสถาปัตยกรรม + Data Flow | ✅ [docs/architecture.md](docs/architecture.md) |
 | เอกสาร Deliverable 2 | ✅ [docx](docs/Rebooter_AI_Deliverable2.docx) พร้อมผลทดสอบจริง |

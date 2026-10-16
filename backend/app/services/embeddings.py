@@ -46,8 +46,10 @@ class ApiEmbedder:
     def _call(self, texts: list[str]) -> list[list[float]]:
         resp = httpx.post(self.url, headers=self.headers, json={"model": self.model, "input": texts}, timeout=60)
         resp.raise_for_status()
-        data = sorted(resp.json()["data"], key=lambda d: d["index"])
-        return [d["embedding"] for d in data]
+        data = resp.json()["data"]
+        # บางผู้ให้บริการไม่ส่ง index มา → ใช้ลำดับเดิม
+        data = sorted(enumerate(data), key=lambda p: p[1].get("index", p[0]))
+        return [d["embedding"] for _, d in data]
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         return self._call(texts)

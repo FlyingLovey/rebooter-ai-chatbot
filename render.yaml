@@ -1,0 +1,48 @@
+# Render Blueprint: สร้าง 2 บริการจาก repo นี้ (New → Blueprint → เลือก repo)
+# ค่าที่เป็นความลับ (sync: false) Render จะให้กรอกตอนสร้าง — ห้ามใส่ key ในไฟล์นี้
+services:
+  - type: web
+    name: rebooter-guard
+    runtime: python
+    plan: free
+    rootDir: guard
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: KNOWLEDGE_PATH
+        value: ../knowledge/Rebooter.md
+      - key: CORS_ALLOWED_ORIGINS
+        value: "*"
+
+  - type: web
+    name: rebooter-ai
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: LLM_API_KEY
+        sync: false
+      - key: GUARD_URL
+        sync: false            # URL ของ rebooter-guard เช่น https://rebooter-guard.onrender.com
+      - key: GUARD_TIMEOUT_SECONDS
+        value: "75"            # Guard แผนฟรีหลับหลังว่าง 15 นาที ตื่นช้าราว 1 นาที
+      - key: EMBEDDING_PROVIDER
+        value: api
+      - key: EMBEDDING_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: EMBEDDING_MODEL
+        value: openai/text-embedding-3-small
+      - key: EMBEDDING_API_KEY
+        sync: false            # ใช้ OpenRouter key เดียวกับ LLM_API_KEY
+      - key: CHROMA_DIR
+        value: /tmp/chroma_db

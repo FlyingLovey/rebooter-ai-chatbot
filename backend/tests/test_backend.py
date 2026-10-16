@@ -166,3 +166,29 @@ def test_chat_response_includes_service_cards(client, upstream):
     upstream.llm_reply = "ติดตั้ง RAM ราคา 200 บาทครับ"
     j = client.post("/api/v1/chat", data={"message": "ซื้อ RAM มาเอง ติดตั้ง RAM ราคาเท่าไหร่"}).json()
     assert any(c["id"] == "S07" for c in j["services"])
+
+
+def test_api_embedder_handles_missing_index(monkeypatch):
+    # OpenRouter อาจไม่ส่ง field index มา → ต้องใช้ลำดับเดิม
+    from app.services import embeddings as emb
+
+    class R:
+        def raise_for_status(self): pass
+        def json(self): return {"data": [{"embedding": [1.0]}, {"embedding": [2.0]}]}
+
+    monkeypatch.setattr(emb.httpx, "post", lambda *a, **k: R())
+    e = emb.ApiEmbedder("https://openrouter.ai/api/v1", "k", "openai/text-embedding-3-small")
+    assert e.embed_documents(["a", "b"]) == [[1.0], [2.0]]
+
+
+def test_index_rebuilds_when_embedding_model_changes(tmp_path):
+    from app.services.rag import KnowledgeBase
+    from tests.conftest import FakeEmbedder
+
+    class Other(FakeEmbedder):
+        model = "other-model"
+
+    kb1 = KnowledgeBase(KB_PATH, tmp_path, FakeEmbedder()); kb1.build()
+    h1 = kb1.collection.metadata["kb_hash"]
+    kb2 = KnowledgeBase(KB_PATH, tmp_path, Other()); kb2.build()
+    assert kb2.collection.metadata["kb_hash"] != h1

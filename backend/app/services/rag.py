@@ -74,7 +74,9 @@ class KnowledgeBase:
     def build(self) -> int:
         """สร้าง/โหลด index คืนจำนวน chunk"""
         md = self.kb_path.read_text(encoding="utf-8-sig")
-        kb_hash = hashlib.sha256(md.encode("utf-8")).hexdigest()
+        # ผูก index กับทั้งเนื้อหาไฟล์และโมเดล embedding: เปลี่ยนโมเดล (เช่น local → api) แล้วต้องสร้างใหม่
+        emb_id = f"{type(self.embedder).__name__}:{getattr(self.embedder, 'model_name', None) or getattr(self.embedder, 'model', '')}"
+        kb_hash = hashlib.sha256((md + "\n" + emb_id).encode("utf-8")).hexdigest()
         self.chunks = split_markdown(md)
 
         existing = None
